@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+/* LifeOS is dark-only (see "04 - Frontend & UI"). */
+:root {
+  --background: #0a0a0f;
+  --foreground: #ededf2;
+  --muted: #9a9aae;
+  --card: #14141c;
+  --border: #26263a;
+  --accent: #6d5efc;
+  --accent-2: #22d3ee;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  color-scheme: dark;
+}
+
+/* Reduced motion (doc 04 §3): CSS animations freeze; color/opacity
+   transitions may stay. Framer transforms are handled by MotionConfig. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
