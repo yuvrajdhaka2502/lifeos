@@ -89,16 +89,21 @@ Related: [[00 - LifeOS Overview]] · [[05 - Database Migration (DDL)]] · [[06 -
 - [x] **Reduced-motion pass** — `MotionConfig reducedMotion="user"` in `Providers` (framer drops transform/layout animation app-wide, keeps opacity) + CSS `prefers-reduced-motion` animation freeze in `globals.css`; Aura collapses to a fading toast.
 - [x] **Verified** — `tsc` + `pnpm build` clean (one TS 5.7 quirk: `PushManager` wants `Uint8Array<ArrayBuffer>`, so the VAPID helper fills a fresh `new Uint8Array(len)`); dev smoke: `/manifest.webmanifest` serves the exact JSON, `sw.js` + all 3 icons 200 with right content-types, rendered `<head>` carries manifest link/theme-color/apple metas, `/capture` still gates (307). *Real-device step left for the user: install → tap "Enable the 10 PM push reminder" → a `push_subscriptions` row appears and the (already-live) Edge Function starts sending push.*
 
-**→ STOPPED HERE (end of session 2026-07-07).** Next: **Phase F — deploy** (Vercel import + env vars, then iPhone install + enable push). ⚠️ On deploy: update the function's `APP_URL` secret (currently `http://localhost:3000`) and `NEXT_PUBLIC_APP_URL`; production push requires HTTPS (Vercel gives it) — push doesn't work on plain `http://localhost` from a phone.
+### Session 2026-07-14 — Phase F begins: first commit + push  ✅
+- [x] **Initial commit `db886ab` pushed** to `github.com/yuvrajdhaka2502/lifeos` on branch **`main`** (85 files). Author/committer = the GitHub account only (repo-local `git config` with the `users.noreply.github.com` email — keeps the real address out of the public history); no co-author trailers.
+- [x] **Pre-push secrets scan clean** — no key material in any tracked file; `.env.local` + `Keys.md` re-confirmed ignored. **`book/` added to `.gitignore`** (personal, stays local-only).
+- [x] Push credentials via `gh` CLI (already authenticated); `gh auth setup-git` wired it as git's credential helper.
+
+**→ Next: rest of Phase F** — Vercel import + env vars, then iPhone install + enable push. ⚠️ On deploy: update the function's `APP_URL` secret (currently `http://localhost:3000`) and `NEXT_PUBLIC_APP_URL`; production push requires HTTPS (Vercel gives it) — push doesn't work on plain `http://localhost` from a phone.
 
 ---
 
 ## ⏭️ To do next (resume point)
 
-> The app is feature-complete. Only **Phase F** remains — first git commit/push (nothing is committed yet!), Vercel deploy, then the on-device steps.
+> The app is feature-complete and the code is on GitHub. What remains of **Phase F**: Vercel deploy, then the on-device steps.
 
 ### Phase F — Deploy + PWA on iPhone (doc 08 Phase F)
-- [ ] **First commit + push to GitHub** (repo has no commits yet; `.env.local`/`Keys.md` confirmed ignored).
+- [x] **First commit + push to GitHub** ✅ 2026-07-14 — `main` @ `db886ab`, sole author, secrets confirmed excluded, `book/` kept local.
 - [ ] Vercel import + env vars (from web dashboard — user's choice): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_APP_URL` (the Vercel URL), `NEXT_PUBLIC_VAPID_PUBLIC_KEY`.
 - [ ] **Update the `APP_URL` function secret** to the Vercel URL (`supabase secrets set` — PAT in [[Keys]]).
 - [ ] iPhone: open the Vercel URL in Safari → Share → **Add to Home Screen** → open the installed app → `/capture` → **Enable the 10 PM push reminder** (needs the user gesture) → verify a `push_subscriptions` row exists.
