@@ -2,7 +2,7 @@
 
 Related: [[00 - LifeOS Overview]] · [[05 - Database Migration (DDL)]] · [[06 - Seed Script]] · [[07 - App Skeleton]] · [[08 - Setup & Deployment Runbook]]
 
-> Living build log / session handoff. **As of 2026-07-07**: the DB is live, the app runs, **SDE + FDE were replaced by a single Study track** (seeded from [[Master_Roadmap]] — see [[Seed - Study]]), and **every feature F1–F8 is built**: F4 track pages, F1 dashboard, F5/F6 + F2 calendar/diary, F3 todos, **F7 capture + reminder LIVE** (Edge Function + pg_cron 22:00 IST + Resend email verified end-to-end), and **F8 PWA/Push + Aura polish** (manifest/icons/iOS meta, `sw.js`, subscribe flow on `/capture`, Aura completion effect, reduced-motion pass). All that remains is **Phase F — deploy to Vercel + install on the iPhone** (see below).
+> Living build log / session handoff. **As of 2026-07-07**: the DB is live, the app runs, **SDE + FDE were replaced by a single Study track** (seeded from [[Master_Roadmap]] — see [[Seed - Study]]), and **every feature F1–F8 is built**: F4 track pages, F1 dashboard, F5/F6 + F2 calendar/diary, F3 todos, **F7 capture + reminder LIVE** (Edge Function + pg_cron 22:00 IST + Resend email verified end-to-end), and **F8 PWA/Push + Aura polish** (manifest/icons/iOS meta, `sw.js`, subscribe flow on `/capture`, Aura completion effect, reduced-motion pass). **Phase F deploy is DONE (2026-07-16): live at `https://lifeos-yuvi18.vercel.app`** — all that remains is the on-iPhone install + enable-push (see below).
 
 ---
 
@@ -94,23 +94,30 @@ Related: [[00 - LifeOS Overview]] · [[05 - Database Migration (DDL)]] · [[06 -
 - [x] **Pre-push secrets scan clean** — no key material in any tracked file; `.env.local` + `Keys.md` re-confirmed ignored. **`book/` added to `.gitignore`** (personal, stays local-only).
 - [x] Push credentials via `gh` CLI (already authenticated); `gh auth setup-git` wired it as git's credential helper.
 
-**→ Next: rest of Phase F** — Vercel import + env vars, then iPhone install + enable push. ⚠️ On deploy: update the function's `APP_URL` secret (currently `http://localhost:3000`) and `NEXT_PUBLIC_APP_URL`; production push requires HTTPS (Vercel gives it) — push doesn't work on plain `http://localhost` from a phone.
+### Session 2026-07-16 — Phase F: Vercel deploy LIVE  ✅
+- [x] **Vercel import + deploy** — imported from GitHub via the web dashboard. First build ran *before* the env vars were added (harmless, but a **redeploy** was required after adding them — `NEXT_PUBLIC_*` values are inlined into the client bundle at build time). All 5 env vars set (`SUPABASE_SERVICE_ROLE_KEY` marked **Sensitive**). Production URL: **`https://lifeos-yuvi18.vercel.app`**.
+- [x] **🐛 Vercel Deployment Protection wall** — the fresh deploy 302-redirected *every* path (including `manifest.webmanifest` and `sw.js`) to `vercel.com/sso-api`. Invisible in the owner's logged-in browser (SSO passes silently) but blocks everyone else — would have broken iPhone install + push. **Fix:** Settings → Deployment Protection → Vercel Authentication → off for production. Lesson: verify with a client that isn't you (curl / incognito).
+- [x] **`APP_URL` function secret updated** to the Vercel URL (was `http://localhost:3000`) via `supabase secrets set`; `secrets list` confirms only `APP_URL` changed (2026-07-16), other 12 untouched.
+- [x] **Verified publicly (curl)** — `/` 307→`/login` (the app's own auth gate, not Vercel's), `/login` 200 `text/html`, `/manifest.webmanifest` 200 `application/manifest+json`, `/sw.js` 200 `application/javascript`, icons 180/192/512 all 200 `image/png`; rendered head carries manifest link + `theme-color` + apple metas. Supabase project **ACTIVE_HEALTHY** (note: `GET /rest/v1/` root is service-role-only → a bare 401 there is normal; test with a real table query, which returned 200).
+- [x] **Book chapter 25 — Deployment** written (`book/25-deployment.md` + README TOC; book stays local-only).
+
+**→ Next: the on-iPhone steps (last of Phase F)** — Safari → open `https://lifeos-yuvi18.vercel.app` → log in → Share → **Add to Home Screen** → open the installed app → `/capture` → **Enable the 10 PM push reminder** → verify a `push_subscriptions` row exists. Optional final proof: temporarily null today's rating and invoke the function with the bearer → expect `ok (push+email)`.
 
 ---
 
 ## ⏭️ To do next (resume point)
 
-> The app is feature-complete and the code is on GitHub. What remains of **Phase F**: Vercel deploy, then the on-device steps.
+> The app is feature-complete, on GitHub, and **deployed: `https://lifeos-yuvi18.vercel.app`**. What remains of **Phase F**: only the on-iPhone install + enable-push.
 
 ### Phase F — Deploy + PWA on iPhone (doc 08 Phase F)
 - [x] **First commit + push to GitHub** ✅ 2026-07-14 — `main` @ `db886ab`, sole author, secrets confirmed excluded, `book/` kept local.
-- [ ] Vercel import + env vars (from web dashboard — user's choice): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_APP_URL` (the Vercel URL), `NEXT_PUBLIC_VAPID_PUBLIC_KEY`.
-- [ ] **Update the `APP_URL` function secret** to the Vercel URL (`supabase secrets set` — PAT in [[Keys]]).
-- [ ] iPhone: open the Vercel URL in Safari → Share → **Add to Home Screen** → open the installed app → `/capture` → **Enable the 10 PM push reminder** (needs the user gesture) → verify a `push_subscriptions` row exists.
+- [x] **Vercel import + env vars** ✅ 2026-07-16 — all 5 set; deployment protection disabled for production (see session log); live at `https://lifeos-yuvi18.vercel.app`.
+- [x] **`APP_URL` function secret updated** ✅ 2026-07-16 — points at the Vercel URL.
+- [ ] iPhone: open `https://lifeos-yuvi18.vercel.app` in Safari → log in → Share → **Add to Home Screen** → open the installed app → `/capture` → **Enable the 10 PM push reminder** (needs the user gesture) → verify a `push_subscriptions` row exists.
 - [ ] Optional final proof: temporarily null today's rating and invoke the function with the bearer → expect `ok (push+email)`.
 
 ### Feature build order (after the shell runs; doc 07 §10)
-Shell ✅ → Auth gate ✅ → F4 Study page ✅ → Gym/Diet ✅ → F1 Dashboard ✅ → F5/F6 + F2 Calendar ✅ → F3 Todos ✅ → F7 Capture + reminder ✅ → F8 PWA/Push + Aura polish ✅ → **Phase F deploy ← next**.
+Shell ✅ → Auth gate ✅ → F4 Study page ✅ → Gym/Diet ✅ → F1 Dashboard ✅ → F5/F6 + F2 Calendar ✅ → F3 Todos ✅ → F7 Capture + reminder ✅ → F8 PWA/Push + Aura polish ✅ → Phase F deploy ✅ → **iPhone install + push ← next (user, on-device)**.
 
 ---
 
